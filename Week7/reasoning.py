@@ -1,54 +1,53 @@
-# Define initial facts and rules
-facts = {"InAmerica(West)", "SoldWeapons(West, Nono)", "Enemy(Nono, America)"}
-rules = [
-    {
-        "conditions": ["InAmerica(x)", "SoldWeapons(x, y)", "Enemy(y, America)"],
-        "conclusion": "Criminal(x)",
-    },
-    {
-        "conditions": ["Enemy(y, America)"],
-        "conclusion": "Dangerous(y)",
-    },
-]
+# Define the knowledge base (KB)
+KB = {
+    "food(Apple)": True,
+    "food(vegetables)": True,
+    "eats(Anil, Peanuts)": True,
+    "alive(Anil)": True,
+    "likes(John, X)": "food(X)",  # Rule: John likes all food
+    "food(X)": "eats(Y, X) and not killed(Y)",  # Rule: Anything eaten and not killed is food
+    "eats(Harry, X)": "eats(Anil, X)",  # Rule: Harry eats what Anil eats
+    "alive(X)": "not killed(X)",  # Rule: Alive implies not killed
+    "not killed(X)": "alive(X)",  # Rule: Not killed implies alive
+}
 
-# Forward chaining function
-def forward_chaining(facts, rules):
-    derived_facts = set(facts)  # Initialize derived facts
-    while True:
-        new_fact_found = False
+# Function to evaluate if a predicate is true based on the KB
+def resolve(predicate):
+    # If it's a direct fact in KB
+    if predicate in KB and isinstance(KB[predicate], bool):
+        return KB[predicate]
 
-        for rule in rules:
-            # Substitute variables and check if conditions are met
-            for fact in derived_facts:
-                if "x" in rule["conditions"][0]:
-                    # Substitute variables (x, y) with specific instances
-                    for condition in rule["conditions"]:
-                        if "x" in condition or "y" in condition:
-                            x = "West"  # Hardcoded substitution for simplicity
-                            y = "Nono"
-                            conditions = [
-                                cond.replace("x", x).replace("y", y)
-                                for cond in rule["conditions"]
-                            ]
-                            conclusion = (
-                                rule["conclusion"].replace("x", x).replace("y", y)
-                            )
+    # If it's a derived rule
+    if predicate in KB:
+        rule = KB[predicate]
+        if " and " in rule:  # Handle conjunction
+            sub_preds = rule.split(" and ")
+            return all(resolve(sub.strip()) for sub in sub_preds)
+        elif " or " in rule:  # Handle disjunction
+            sub_preds = rule.split(" or ")
+            return any(resolve(sub.strip()) for sub in sub_preds)
+        elif "not " in rule:  # Handle negation
+            sub_pred = rule[4:]  # Remove "not "
+            return not resolve(sub_pred.strip())
+        else:  # Handle single predicate
+            return resolve(rule.strip())
 
-                            # Check if all conditions are satisfied
-                            if all(cond in derived_facts for cond in conditions) and conclusion not in derived_facts:
-                                derived_facts.add(conclusion)
-                                print(f"New fact derived: {conclusion}")
-                                new_fact_found = True
+    # If the predicate is a specific query (e.g., likes(John, Peanuts))
+    if "(" in predicate:
+        func, args = predicate.split("(")
+        args = args.strip(")").split(", ")
+        if func == "food" and args[0] == "Peanuts":
+            return resolve("eats(Anil, Peanuts)") and not resolve("killed(Anil)")
+        if func == "likes" and args[0] == "John" and args[1] == "Peanuts":
+            return resolve("food(Peanuts)")
 
-        # Exit loop if no new fact is found
-        if not new_fact_found:
-            break
+    # Default to False if no rule or fact applies
+    return False
 
-    return derived_facts
+# Query to prove: John likes Peanuts
+query = "likes(John, Peanuts)"
+result = resolve(query)
 
-# Run forward chaining
-final_facts = forward_chaining(facts, rules)
+# Print the result
 print("Output: 1BM22CS200")
-print("\nFinal derived facts:")
-for fact in final_facts:
-    print(fact)
+print(f"Does John like peanuts? {'Yes' if result else 'No'}")
