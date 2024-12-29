@@ -7,9 +7,11 @@ def check(i):
     print(f"Moved to Room {(i+1)%2}")
     return (i+1)%2
 i=random.choice([0,1])
+
 print(f"{i} is the start index")
 print("0 is dirty and 1 is clean")
 print(f"{l} is the initial state of room")
+
 while sum(l)!=2:
     i=check(i)
     if l[(i+1)%2]==1:

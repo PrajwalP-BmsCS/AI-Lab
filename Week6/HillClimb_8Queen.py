@@ -43,4 +43,4 @@ def print_board(solution):
     for row in board:
         print(' '.join(row))
         
-print(print_board(hc()))
+print_board(hc())

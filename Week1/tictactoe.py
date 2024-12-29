@@ -63,7 +63,6 @@ while True:
         print("It's a tie!")
         break
     
-    
     move = can_win("O")
     print(move)
     if move is None:
@@ -79,4 +78,3 @@ while True:
         display()
         print("O wins!")
         break
-
