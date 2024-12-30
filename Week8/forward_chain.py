@@ -1,54 +1,35 @@
-# Define initial facts and rules
-facts = {"InAmerica(West)", "SoldWeapons(West, Nono)", "Enemy(Nono, America)"}
-rules = [
-    {
-        "conditions": ["InAmerica(x)", "SoldWeapons(x, y)", "Enemy(y, America)"],
-        "conclusion": "Criminal(x)",
-    },
-    {
-        "conditions": ["Enemy(y, America)"],
-        "conclusion": "Dangerous(y)",
-    },
-]
+KB = set()
 
-# Forward chaining function
-def forward_chaining(facts, rules):
-    derived_facts = set(facts)  # Initialize derived facts
-    while True:
-        new_fact_found = False
+KB.add('American(Robert)')
+KB.add('Enemy(America, A)')
+KB.add('Missile(T1)')
+KB.add('Owns(A, T1)')
 
-        for rule in rules:
-            # Substitute variables and check if conditions are met
-            for fact in derived_facts:
-                if "x" in rule["conditions"][0]:
-                    # Substitute variables (x, y) with specific instances
-                    for condition in rule["conditions"]:
-                        if "x" in condition or "y" in condition:
-                            x = "West"  # Hardcoded substitution for simplicity
-                            y = "Nono"
-                            conditions = [
-                                cond.replace("x", x).replace("y", y)
-                                for cond in rule["conditions"]
-                            ]
-                            conclusion = (
-                                rule["conclusion"].replace("x", x).replace("y", y)
-                            )
+def modus_ponens(fact1, fact2, conclusion):
+    if fact1 in KB and fact2 in KB:
+        KB.add(conclusion)
+        print(f"Inferred: {conclusion}")
 
-                            # Check if all conditions are satisfied
-                            if all(cond in derived_facts for cond in conditions) and conclusion not in derived_facts:
-                                derived_facts.add(conclusion)
-                                print(f"New fact derived: {conclusion}")
-                                new_fact_found = True
+def forward_chaining():
+    if 'Missile(T1)' in KB:
+        KB.add('Weapon(T1)')
+        print(f"Inferred: Weapon(T1)")
+    
+    if 'Owns(A, T1)' in KB and 'Weapon(T1)' in KB:
+        KB.add('Sells(Robert, T1, A)')
+        print(f"Inferred: Sells(Robert, T1, A)")
 
-        # Exit loop if no new fact is found
-        if not new_fact_found:
-            break
+    if 'Enemy(America, A)' in KB:
+        KB.add('Hostile(A)')
+        print(f"Inferred: Hostile(A)")
+    
+    if 'American(Robert)' in KB and 'Weapon(T1)' in KB and 'Sells(Robert, T1, A)' in KB and 'Hostile(A)' in KB:
+        KB.add('Criminal(Robert)')
+        print("Inferred: Criminal(Robert)")
+    
+    if 'Criminal(Robert)' in KB:
+        print("Robert is a criminal!")
+    else:
+        print("No more inferences can be made.")
 
-    return derived_facts
-
-# Run forward chaining
-final_facts = forward_chaining(facts, rules)
-print("Output: 1BM22CS200")
-print("\nFinal derived facts:")
-for fact in final_facts:
-    print(fact)
+forward_chaining()

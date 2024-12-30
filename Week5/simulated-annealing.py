@@ -40,6 +40,6 @@ def ap(curr_c, new_c, temp):
     if new_c < curr_c:
         return 1  
     else:
-        return math.exp((curr_c - new_c) / temp)  #
+        return math.exp((curr_c - new_c) / temp)  
 
 print(sim_anneal([1, 2, 3, 4, 5], 1000, 1000, 0.99))
